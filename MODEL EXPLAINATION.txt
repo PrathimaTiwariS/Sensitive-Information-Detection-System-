@@ -1,0 +1,1518 @@
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Step 1: Load the data
+file_path = 'keywords.txt'
+
+# Read the file
+with open(file_path, 'r') as file:
+    data = file.read()
+
+# Step 2: Clean and process the data
+# Assuming data is separated by line breaks
+# Split the data into lines and remove unnecessary whitespace
+lines = data.splitlines()
+lines = [line.strip() for line in lines if line.strip() != ""]
+
+# Step 3: Initialize CountVectorizer
+vectorizer = CountVectorizer()
+
+# Step 4: Fit and transform the data
+bow_matrix = vectorizer.fit_transform(lines)
+
+# Convert to DataFrame for easy viewing
+bow_df = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+
+# Show the result
+print(bow_df)
+explain line by line
+ChatGPT
+Certainly! Let's go through the code step by step to understand what each part does:
+
+1. Importing Libraries
+python
+Copy code
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd: Imports the pandas library, which is useful for data manipulation and analysis.
+from sklearn.feature_extraction.text import CountVectorizer: Imports the CountVectorizer class from scikit-learn, a tool that converts text documents into a matrix of token (word) counts.
+2. Step 1: Load the Data
+python
+Copy code
+file_path = 'keywords.txt'
+
+# Read the file
+with open(file_path, 'r') as file:
+    data = file.read()
+file_path = 'keywords.txt': Specifies the path to the file (keywords.txt) that contains the text data.
+with open(file_path, 'r') as file:: Opens the file in read mode ('r') and assigns it to the variable file.
+data = file.read(): Reads the entire contents of the file into the variable data as a single string.
+3. Step 2: Clean and Process the Data
+python
+Copy code
+# Assuming data is separated by line breaks
+# Split the data into lines and remove unnecessary whitespace
+lines = data.splitlines()
+lines = [line.strip() for line in lines if line.strip() != ""]
+lines = data.splitlines(): Splits the data string into a list of lines (each line is a separate element in the list). This method automatically handles different types of line breaks (e.g., \n, \r\n).
+lines = [line.strip() for line in lines if line.strip() != ""]: This is a list comprehension that:
+line.strip(): Removes any leading or trailing whitespace from each line.
+if line.strip() != "": Filters out any empty lines after stripping whitespace.
+The result is a list of cleaned, non-empty lines.
+4. Step 3: Initialize CountVectorizer
+python
+Copy code
+vectorizer = CountVectorizer()
+vectorizer = CountVectorizer(): Creates an instance of CountVectorizer, which will be used to convert the cleaned text data into a Bag of Words (BoW) representation.
+5. Step 4: Fit and Transform the Data
+python
+Copy code
+bow_matrix = vectorizer.fit_transform(lines)
+bow_matrix = vectorizer.fit_transform(lines):
+fit_transform(): Combines the fit and transform steps:
+fit(): Learns the vocabulary from the list of lines.
+transform(): Converts each line into a vector of word counts.
+bow_matrix: The resulting matrix is a sparse matrix where each row corresponds to a line from the input, and each column corresponds to a word from the learned vocabulary. The values in the matrix represent the count of each word in each line.
+6. Convert to DataFrame for Easy Viewing
+python
+Copy code
+bow_df = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+bow_df: Creates a pandas DataFrame from the Bag of Words matrix for easier viewing and manipulation.
+bow_matrix.toarray(): Converts the sparse matrix into a dense NumPy array, where each row is a document, and each column is a word.
+columns=vectorizer.get_feature_names_out(): Sets the column names of the DataFrame to the words from the vocabulary (the feature names).
+7. Show the Result
+python
+Copy code
+print(bow_df)
+print(bow_df): Displays the DataFrame, where each row corresponds to a line from the input data, and each column represents a word from the vocabulary. The values in the DataFrame show the count of each word in each line.
+Example Output
+Assuming your keywords.txt contains the following text:
+
+Copy code
+apple banana
+banana orange
+apple orange orange
+The output DataFrame (bow_df) would look something like this:
+
+apple	banana	orange
+0	1	1	0
+1	0	1	1
+2	1	0	2
+Each row corresponds to a line from the file.
+Each column corresponds to a word from the file.
+The values indicate the count of each word in each line.
+This matrix representation is a common input format for many machine learning models used in text classification tasks.
+
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+
+# Define the categories
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+
+# Combine categories into a dictionary for easy processing
+categories = {
+    'Banking_Accounts': banking_accounts,
+    'Banking_Transactions': banking_transactions,
+    'Banking_Identifiers': banking_identifiers,
+    'Non_Banking_General': non_banking_general,
+    'Non_Banking_Other': non_banking_other
+}
+
+# Step 3: Apply BoW model to each category
+bow_results = {}
+
+for category, words in categories.items():
+    # Initialize CountVectorizer
+    vectorizer = CountVectorizer()
+    
+    # Fit and transform the words into BoW
+    bow_matrix = vectorizer.fit_transform(words)
+    
+    # Convert to DataFrame
+    bow_df = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    
+    # Store the result in a dictionary
+    bow_results[category] = bow_df
+
+# Step 4: Output the results
+for category, df in bow_results.items():
+    print(f"\nCategory: {category}")
+    print(df)
+explain line by line
+ChatGPT
+Certainly! Let's go through the code step by step to understand what each part does.
+
+1. Importing Libraries
+python
+Copy code
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd: Imports the pandas library, which is used for data manipulation and creating DataFrames.
+from sklearn.feature_extraction.text import CountVectorizer: Imports the CountVectorizer class from scikit-learn, which converts a collection of text documents into a matrix of token (word) counts.
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+Defining Categories: Five different lists of words are defined, each representing a different category (e.g., banking_accounts, banking_transactions). Each list contains strings that represent keywords or terms related to that category.
+
+Certainly! Let's go through the code step by step to understand what each part does.
+
+1. Importing Libraries
+python
+Copy code
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd: Imports the pandas library, which is used for data manipulation and creating DataFrames.
+from sklearn.feature_extraction.text import CountVectorizer: Imports the CountVectorizer class from scikit-learn, which converts a collection of text documents into a matrix of token (word) counts.
+2. Defining the Categories
+python
+Copy code
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+Defining Categories: Five different lists of words are defined, each representing a different category (e.g., banking_accounts, banking_transactions). Each list contains strings that represent keywords or terms related to that category.
+3. Combining Categories into a Dictionary
+python
+Copy code
+categories = {
+    'Banking_Accounts': banking_accounts,
+    'Banking_Transactions': banking_transactions,
+    'Banking_Identifiers': banking_identifiers,
+    'Non_Banking_General': non_banking_general,
+    'Non_Banking_Other': non_banking_other
+}
+Combining Categories: These lists are combined into a dictionary named categories, where the keys are the category names (e.g., 'Banking_Accounts') and the values are the corresponding lists of words. This allows for easy iteration and processing of each category.
+4. Step 3: Apply BoW Model to Each Category
+python
+Copy code
+bow_results = {}
+
+for category, words in categories.items():
+    # Initialize CountVectorizer
+    vectorizer = CountVectorizer()
+    
+    # Fit and transform the words into BoW
+    bow_matrix = vectorizer.fit_transform(words)
+    
+    # Convert to DataFrame
+    bow_df = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out())
+    
+    # Store the result in a dictionary
+    bow_results[category] = bow_df
+bow_results = {}: Initializes an empty dictionary to store the Bag of Words (BoW) results for each category.
+for category, words in categories.items():: Loops over each category in the categories dictionary. category represents the category name (e.g., 'Banking_Accounts'), and words represents the list of words associated with that category.
+vectorizer = CountVectorizer(): Creates an instance of CountVectorizer to convert the list of words into a BoW representation.
+bow_matrix = vectorizer.fit_transform(words):
+fit_transform(words): Combines the fit and transform steps:
+fit(): Learns the vocabulary from the list of words.
+transform(): Converts each word into a vector of counts.
+bow_matrix: The resulting matrix is a sparse matrix where each row corresponds to a word from the input list, and each column corresponds to a unique token (word) from the vocabulary. The values in the matrix represent the count of each word.
+bow_df = pd.DataFrame(bow_matrix.toarray(), columns=vectorizer.get_feature_names_out()):
+Converts the sparse matrix into a dense pandas DataFrame for easier viewing.
+bow_matrix.toarray(): Converts the sparse matrix into a dense array.
+columns=vectorizer.get_feature_names_out(): The column names of the DataFrame are set to the tokens learned by the vectorizer.
+bow_results[category] = bow_df: Stores the resulting DataFrame in the bow_results dictionary, using the category name as the key.
+5. Step 4: Output the Results
+python
+Copy code
+for category, df in bow_results.items():
+    print(f"\nCategory: {category}")
+    print(df)
+for category, df in bow_results.items():: Loops through the bow_results dictionary to print the BoW representation for each category.
+print(f"\nCategory: {category}"): Prints the category name.
+print(df): Prints the DataFrame that shows the BoW matrix for the corresponding category.
+Example Output
+For a category like 'Banking_Accounts', the output might look like this:
+
+bash
+Copy code
+Category: Banking_Accounts
+   ac  account  average  balance  closing  id  limit  maintained  name  new  opening  remarks  total
+0   1        0        0        0        0   0      0           0     0    0        0        0      0
+1   0        1        0        0        0   1      0           0     1    0        0        0      0
+2   0        0        1        0        0   0      0           1     0    0        0        0      0
+3   0        0        0        1        0   0      0           0     0    0        0        0      0
+4   0        0        0        0        1   0      0           0     0    0        0        0      0
+5   0        0        0        1        0   0      0           0     0    0        1        0      0
+6   0        0        0        0        0   0      1           0     0    0        0        0      0
+7   0        0        0        1        0   0      0           0     0    0        0        1      0
+8   0        0        0        1        0   0      0           0     0    1        0        0      0
+9   0        0        0        1        0   0      0           0     0    0        0        0      1
+Each row corresponds to a word from the banking_accounts list.
+Each column corresponds to a unique word in the list.
+The values indicate the count of each word in each row (since each list item is treated as a single document, these are mostly 1s and 0s).
+This output allows you to see how words in each category are represented in a BoW model.
+
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# Step 1: Prepare the data with artificial labels
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+
+# Combine the data and labels
+data = (banking_accounts + banking_transactions + banking_identifiers + 
+        non_banking_general + non_banking_other)
+
+labels = (['Banking_Accounts'] * len(banking_accounts) + 
+          ['Banking_Transactions'] * len(banking_transactions) +
+          ['Banking_Identifiers'] * len(banking_identifiers) +
+          ['Non_Banking_General'] * len(non_banking_general) +
+          ['Non_Banking_Other'] * len(non_banking_other))
+
+# Step 2: Vectorization
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(data)
+
+# Step 3: Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.3, random_state=42)
+
+# Step 4: Train the Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+
+# Step 5: Predict and evaluate the model
+y_pred = clf.predict(X_test)
+
+# Accuracy Score
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print("Classification Report:")
+print(report)
+explain line by line
+ChatGPT
+Certainly! Let's go through the code line by line to understand what each part is doing.
+
+1. Importing Libraries
+python
+Copy code
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
+import pandas as pd: Imports the pandas library for data manipulation.
+from sklearn.feature_extraction.text import CountVectorizer: Imports CountVectorizer, which converts a collection of text documents into a matrix of token (word) counts.
+from sklearn.model_selection import train_test_split: Imports train_test_split, which is used to split the dataset into training and testing sets.
+from sklearn.ensemble import RandomForestClassifier: Imports RandomForestClassifier, a machine learning model that is used for classification tasks.
+from sklearn.metrics import accuracy_score, classification_report: Imports accuracy_score and classification_report, which are metrics for evaluating the performance of the classifier.
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+Defining Categories: The data is organized into different categories, where each list (e.g., banking_accounts, banking_transactions) represents a different category of keywords related to banking and non-banking topics.
+python
+Copy code
+# Combine the data and labels
+data = (banking_accounts + banking_transactions + banking_identifiers + 
+        non_banking_general + non_banking_other)
+
+labels = (['Banking_Accounts'] * len(banking_accounts) + 
+          ['Banking_Transactions'] * len(banking_transactions) +
+          ['Banking_Identifiers'] * len(banking_identifiers) +
+          ['Non_Banking_General'] * len(non_banking_general) +
+          ['Non_Banking_Other'] * len(non_banking_other))
+Combining Data:
+data: Concatenates all the category lists into a single list of keywords.
+labels: Creates a list of labels, where each label corresponds to the category of the keywords. The labels are repeated according to the number of keywords in each category (e.g., 'Banking_Accounts' is repeated len(banking_accounts) times).
+3. Step 2: Vectorization
+python
+Copy code
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(data)
+vectorizer = CountVectorizer(): Initializes a CountVectorizer object.
+X = vectorizer.fit_transform(data):
+fit_transform(data):
+fit(): Learns the vocabulary from the list of keywords in data.
+transform(): Converts the list of keywords into a matrix of token counts (BoW representation).
+X: A sparse matrix where each row corresponds to a keyword, and each column corresponds to a word from the learned vocabulary. The values in the matrix represent the count of each word in each keyword.
+4. Step 3: Split the Data into Training and Testing Sets
+python
+Copy code
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.3, random_state=42)
+train_test_split(X, labels, test_size=0.3, random_state=42):
+X: The matrix of word counts (BoW representation).
+labels: The corresponding labels for each keyword.
+test_size=0.3: Specifies that 30% of the data will be used for testing, and 70% will be used for training.
+random_state=42: Ensures that the data split is reproducible.
+X_train, X_test, y_train, y_test: These variables store the training and testing data and their corresponding labels.
+5. Step 4: Train the Random Forest Classifier
+python
+Copy code
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+clf = RandomForestClassifier(n_estimators=100, random_state=42):
+n_estimators=100: Specifies the number of trees in the forest (100 decision trees will be used).
+random_state=42: Ensures reproducibility of the model.
+clf.fit(X_train, y_train):
+fit(X_train, y_train): Trains the RandomForestClassifier on the training data (X_train) and the corresponding labels (y_train).
+6. Step 5: Predict and Evaluate the Model
+python
+Copy code
+y_pred = clf.predict(X_test)
+y_pred = clf.predict(X_test):
+predict(X_test): Uses the trained model to predict the labels for the testing data (X_test).
+y_pred: The predicted labels for the testing data.
+python
+Copy code
+# Accuracy Score
+accuracy = accuracy_score(y_test, y_pred)
+report = classification_report(y_test, y_pred)
+
+print(f"Accuracy: {accuracy}")
+print("Classification Report:")
+print(report)
+accuracy = accuracy_score(y_test, y_pred):
+accuracy_score(y_test, y_pred): Calculates the accuracy of the model, which is the proportion of correct predictions (y_pred) compared to the actual labels (y_test).
+accuracy: Stores the accuracy score.
+report = classification_report(y_test, y_pred):
+classification_report(y_test, y_pred): Generates a detailed classification report, including precision, recall, and F1-score for each class.
+report: Stores the classification report.
+print(f"Accuracy: {accuracy}"): Prints the accuracy score.
+print("Classification Report:"): Prints the header for the classification report.
+print(report): Prints the detailed classification report, which shows how well the model performed for each category.
+Example Output
+The output would provide an accuracy score and a classification report that includes precision, recall, and F1-scores for each category. This will help you evaluate how well your model is performing on the test data.
+
+Accuracy: Shows the overall performance of the model.
+Classification Report: Breaks down the model's performance for each category, providing insights into which categories the model handles well and where it might need improvement.
+# Feature Importance
+feature_importances = clf.feature_importances_
+features = vectorizer.get_feature_names_out()
+indices = np.argsort(feature_importances)[-20:]  # Top 20 features
+plt.figure(figsize=(10, 8))
+plt.barh(range(len(indices)), feature_importances[indices], align='center')
+plt.yticks(range(len(indices)), [features[i] for i in indices])
+plt.xlabel('Feature Importance')
+plt.title('Top 20 Features in Random Forest')
+plt.show()
+ChatGPT
+This code snippet is used to visualize the most important features in the Random Forest model. Let's break it down:
+
+1. Feature Importance Calculation
+python
+Copy code
+feature_importances = clf.feature_importances_
+clf.feature_importances_: This attribute of the trained Random Forest model (clf) gives the importance of each feature (word) in making predictions. Each feature's importance is represented as a number, where higher numbers indicate greater importance.
+2. Extract Feature Names
+python
+Copy code
+features = vectorizer.get_feature_names_out()
+vectorizer.get_feature_names_out(): This method retrieves the names of the features (words) that were used in the model. These are the words from the vocabulary learned by the CountVectorizer.
+3. Identify Top 20 Features
+python
+Copy code
+indices = np.argsort(feature_importances)[-20:]
+np.argsort(feature_importances): Returns the indices that would sort the feature_importances array in ascending order.
+[-20:]: Selects the indices of the top 20 most important features (highest importance scores) by slicing the last 20 elements.
+4. Plot the Feature Importance
+python
+Copy code
+plt.figure(figsize=(10, 8))
+plt.barh(range(len(indices)), feature_importances[indices], align='center')
+plt.yticks(range(len(indices)), [features[i] for i in indices])
+plt.xlabel('Feature Importance')
+plt.title('Top 20 Features in Random Forest')
+plt.show()
+plt.figure(figsize=(10, 8)): Initializes a new figure for plotting with a specified size (10 inches by 8 inches).
+plt.barh(range(len(indices)), feature_importances[indices], align='center'):
+Creates a horizontal bar plot.
+range(len(indices)): Defines the position of each bar on the y-axis.
+feature_importances[indices]: The heights of the bars represent the importance scores of the top 20 features.
+plt.yticks(range(len(indices)), [features[i] for i in indices]):
+Sets the labels on the y-axis to the names of the top 20 features.
+[features[i] for i in indices]: Retrieves the feature names corresponding to the top 20 importance scores.
+plt.xlabel('Feature Importance'): Labels the x-axis as "Feature Importance."
+plt.title('Top 20 Features in Random Forest'): Adds a title to the plot.
+plt.show(): Displays the plot.
+What the Plot Shows
+The plot will display the top 20 most important features (words) that the Random Forest model used for classification. Each bar's length indicates how important that word is in making predictions. This can provide insights into which words are most influential in differentiating between the categories in your dataset.
+import numpy as np
+
+# Get feature importances
+importances = clf.feature_importances_
+indices = np.argsort(importances)[::-1]
+features = vectorizer.get_feature_names_out()
+
+# Plot feature importances
+plt.figure(figsize=(12, 8))
+plt.bar(range(X.shape[1]), importances[indices], align='center')
+plt.xticks(range(X.shape[1]), np.array(features)[indices], rotation=90)
+plt.xlabel('Features')
+plt.ylabel('Importance')
+plt.title('Feature Importances')
+plt.show()
+ChatGPT
+This code snippet visualizes the feature importances of all features in the Random Forest model. Here's an explanation of each part:
+
+1. Calculate Feature Importances
+python
+Copy code
+importances = clf.feature_importances_
+clf.feature_importances_: Extracts the feature importances from the trained Random Forest model. Each feature's importance score indicates how much it contributes to the model's decisions.
+2. Sort Features by Importance
+python
+Copy code
+indices = np.argsort(importances)[::-1]
+np.argsort(importances): Returns the indices that would sort the importances array in ascending order.
+[::-1]: Reverses the order of the indices to get the features in descending order of importance.
+3. Get Feature Names
+python
+Copy code
+features = vectorizer.get_feature_names_out()
+vectorizer.get_feature_names_out(): Retrieves the names of the features (words) that were used in the model.
+4. Plot Feature Importances
+python
+Copy code
+plt.figure(figsize=(12, 8))
+plt.bar(range(X.shape[1]), importances[indices], align='center')
+plt.xticks(range(X.shape[1]), np.array(features)[indices], rotation=90)
+plt.xlabel('Features')
+plt.ylabel('Importance')
+plt.title('Feature Importances')
+plt.show()
+plt.figure(figsize=(12, 8)): Creates a new figure for the plot with a size of 12 inches by 8 inches.
+plt.bar(range(X.shape[1]), importances[indices], align='center'):
+range(X.shape[1]): Creates an array of numbers from 0 to the total number of features, which will be used as the x-axis positions.
+importances[indices]: The height of each bar corresponds to the importance of each feature, sorted in descending order.
+align='center': Centers the bars on the x-ticks.
+plt.xticks(range(X.shape[1]), np.array(features)[indices], rotation=90):
+Sets the labels for the x-axis to the feature names, sorted by importance.
+rotation=90: Rotates the labels by 90 degrees for better readability.
+plt.xlabel('Features'): Labels the x-axis as "Features."
+plt.ylabel('Importance'): Labels the y-axis as "Importance."
+plt.title('Feature Importances'): Adds a title to the plot.
+plt.show(): Displays the plot.
+What the Plot Shows
+The plot shows the importance of each feature (word) used in the model. Each bar represents a feature, and its height shows how important that feature is in making predictions. The features are displayed in descending order of importance, with the most influential features on the left.
+This visualization can help you understand which words the Random Forest model considers most critical in differentiating between the categories in your dataset. If the x-axis labels are too crowded, you might consider plotting only the top features for clarity.
+
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split, cross_val_score, learning_curve
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    accuracy_score, classification_report, confusion_matrix, 
+    precision_score, recall_score, f1_score, roc_curve, auc, 
+    precision_recall_curve
+)
+import matplotlib.pyplot as plt
+import seaborn as sns
+NumPy (np) and Pandas (pd): Libraries for numerical operations and data manipulation.
+CountVectorizer: Converts text data into a matrix of token counts.
+train_test_split: Splits the dataset into training and testing sets.
+cross_val_score: Performs cross-validation to evaluate the model.
+learning_curve: Plots learning curves to diagnose bias/variance.
+RandomForestClassifier: An ensemble learning method used for classification tasks.
+accuracy_score, classification_report, etc.: Functions to evaluate the model.
+matplotlib.pyplot (plt) and seaborn (sns): Libraries for data visualization.
+Step 1: Prepare the Data with Sensitivity Labels
+python
+Copy code
+banking_accounts = [
+    "A/C", "account name", "account id", "account limit", "balance", "opening balance",
+    "closing balance", "new balance", "total balance", "balance remarks", "average balance maintained"
+]
+banking_transactions = [
+    "transaction date", "tran date", "value date", "transaction details", "amount",
+    "debit", "credit", "cash advance", "transaction history", "transaction type",
+    "transfer recived", "payments", "adjustments", "transactions", "withdrawal", 
+    "withdraw", "fee", "other charges"
+]
+banking_identifiers = [
+    "scheme code", "customer id", "currency code", "chq. no.", "branch name",
+    "bank id", "branch id", "statement date", "IFSC CODE", "MICR CODE", 
+    "CRN", "UTR No", "sort code"
+]
+non_banking_general = [
+    "personal details", "period", "insurance details", "benefit type", "capital",
+    "liabilities", "assets", "investment", "bills", "issue date", "tax invoice",
+    "VAT registration number", "company name"
+]
+non_banking_other = [
+    "apple", "bananacherry", "dog", "elephant", "flower", "guitar", "honey",
+    "ice cream", "jacket", "kite", "lemon", "mountain", "notebook", "ocean", 
+    "pencil", "quilt", "rainbow", "sand", "tiger", "umbrella", "violin", "whale",
+    "xylophone", "yacht", "zebra"
+]
+These lists contain different categories of terms. The terms are grouped into banking-related (banking_accounts, banking_transactions, banking_identifiers) and non-banking-related (non_banking_general, non_banking_other) categories.
+python
+Copy code
+# Combine the data and labels
+data = (banking_accounts + banking_transactions + banking_identifiers + 
+        non_banking_general + non_banking_other)
+Combines all the terms into a single list called data.
+python
+Copy code
+# Assign sensitivity labels
+labels = (['Sensitive'] * (len(banking_accounts) + len(banking_transactions) + len(banking_identifiers)) +
+          ['Not Sensitive'] * (len(non_banking_general) + len(non_banking_other)))
+Creates a list called labels, assigning the label "Sensitive" to all banking-related terms and "Not Sensitive" to all non-banking-related terms.
+Step 2: Vectorization
+python
+Copy code
+# Step 2: Vectorization
+vectorizer = CountVectorizer()
+X = vectorizer.fit_transform(data)
+CountVectorizer(): Converts the text data into a matrix of token counts (bag-of-words model).
+fit_transform(data): Learns the vocabulary dictionary and returns the term-document matrix X.
+Step 3: Split the Data into Training and Testing Sets
+python
+Copy code
+# Step 3: Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, labels, test_size=0.3, random_state=42)
+train_test_split(X, labels, test_size=0.3, random_state=42): Splits the data into training (70%) and testing (30%) sets. The random_state=42 ensures reproducibility.
+Step 4: Train the Random Forest Classifier
+python
+Copy code
+# Step 4: Train the Random Forest Classifier
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+RandomForestClassifier(n_estimators=100, random_state=42): Initializes a Random Forest classifier with 100 trees.
+fit(X_train, y_train): Trains the classifier on the training data.
+Step 5: Predict and Evaluate the Model
+python
+Copy code
+# Step 5: Predict and evaluate the model
+y_pred = clf.predict(X_test)
+predict(X_test): Predicts the labels for the test data.
+Evaluation Metrics
+python
+Copy code
+# Accuracy Score
+accuracy = accuracy_score(y_test, y_pred)
+accuracy_score(y_test, y_pred): Computes the accuracy of the model, which is the ratio of correct predictions to the total number of predictions.
+python
+Copy code
+# Classification Report
+report = classification_report(y_test, y_pred)
+classification_report(y_test, y_pred): Generates a report with precision, recall, F1-score, and support for each class.
+python
+Copy code
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+confusion_matrix(y_test, y_pred): Creates a confusion matrix showing the number of correct and incorrect predictions for each class.
+python
+Copy code
+# Precision, Recall, F1 Score
+precision = precision_score(y_test, y_pred, average='binary', pos_label='Sensitive')
+recall = recall_score(y_test, y_pred, average='binary', pos_label='Sensitive')
+f1 = f1_score(y_test, y_pred, average='binary', pos_label='Sensitive')
+precision_score: Measures how many of the positively predicted instances are correct.
+recall_score: Measures how many of the actual positive instances are correctly predicted.
+f1_score: The harmonic mean of precision and recall, useful when you need a balance between them.
+python
+Copy code
+# Cross-Validation Accuracy
+cv_scores = cross_val_score(clf, X, labels, cv=5)
+cv_mean = np.mean(cv_scores)
+cross_val_score(clf, X, labels, cv=5): Performs 5-fold cross-validation to assess the model's performance. The mean accuracy of the cross-validation is calculated.
+Print Results
+python
+Copy code
+# Print results
+print(f"Accuracy: {accuracy}")
+print(f"Cross-Validation Accuracy (mean): {cv_mean}")
+print("\nClassification Report:")
+print(report)
+print("\nConfusion Matrix:")
+print(conf_matrix)
+print(f"\nPrecision: {precision}")
+print(f"Recall: {recall}")
+print(f"F1 Score: {f1}")
+Prints the evaluation metrics, including accuracy, cross-validation accuracy, the classification report, confusion matrix, precision, recall, and F1 score.
+
+# Plot Confusion Matrix
+plt.figure(figsize=(6, 4))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Not Sensitive', 'Sensitive'], yticklabels=['Not Sensitive', 'Sensitive'])
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+ChatGPT
+This code snippet generates a heatmap to visualize the confusion matrix using Matplotlib and Seaborn. The confusion matrix provides a summary of prediction results on a classification problem. The heatmap makes it easier to see how well the classifier performed in distinguishing between the "Sensitive" and "Not Sensitive" categories.
+
+Explanation:
+python
+Copy code
+# Plot Confusion Matrix
+plt.figure(figsize=(6, 4))
+plt.figure(figsize=(6, 4)): Initializes a new figure for the plot with a size of 6 inches by 4 inches.
+python
+Copy code
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=['Not Sensitive', 'Sensitive'], yticklabels=['Not Sensitive', 'Sensitive'])
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues'): Creates a heatmap from the confusion matrix.
+conf_matrix: The confusion matrix data to be visualized.
+annot=True: Annotates each cell with the numeric value.
+fmt='d': Formats the annotation text as integers ('d' stands for decimal integer).
+cmap='Blues': Uses the "Blues" colormap for the heatmap.
+xticklabels and yticklabels: Labels for the x-axis and y-axis ticks, representing the predicted and true classes, respectively.
+python
+Copy code
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+plt.xlabel('Predicted'): Sets the x-axis label to "Predicted".
+plt.ylabel('True'): Sets the y-axis label to "True".
+plt.title('Confusion Matrix'): Sets the title of the plot to "Confusion Matrix".
+plt.show(): Displays the plot.
+Result:
+The heatmap will show a 2x2 matrix where:
+
+The top-left cell indicates the count of "Not Sensitive" labels correctly predicted as "Not Sensitive" (True Negatives).
+The bottom-right cell indicates the count of "Sensitive" labels correctly predicted as "Sensitive" (True Positives).
+The top-right cell indicates the count of "Not Sensitive" labels incorrectly predicted as "Sensitive" (False Positives).
+The bottom-left cell indicates the count of "Sensitive" labels incorrectly predicted as "Not Sensitive" (False Negatives).
+The intensity of the color in each cell will represent the magnitude of the corresponding value, providing a clear visual of where the classifier is performing well and where it may need improvement.
+
+from sklearn.metrics import classification_report
+import pandas as pd
+import numpy as np
+
+# Generate classification report
+report = classification_report(y_test, y_pred, output_dict=True)
+
+# Convert report to DataFrame
+report_df = pd.DataFrame(report).transpose()
+
+# Create a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(report_df.iloc[:-1, :].astype(float), annot=True, cmap='viridis', fmt='.2f', linewidths=.5)
+plt.title('Classification Report Heatmap')
+plt.show()
+ChatGPT
+This code generates a heatmap to visualize the classification report, which includes metrics such as precision, recall, and F1-score for each class ("Sensitive" and "Not Sensitive"). By converting the classification report into a DataFrame and then plotting it as a heatmap, you can easily interpret the performance of your model.
+
+Step-by-Step Explanation:
+python
+Copy code
+from sklearn.metrics import classification_report
+import pandas as pd
+import numpy as np
+classification_report: Generates a report of precision, recall, F1-score, and support.
+pandas as pd and numpy as np: Libraries for data manipulation.
+python
+Copy code
+# Generate classification report
+report = classification_report(y_test, y_pred, output_dict=True)
+classification_report(y_test, y_pred, output_dict=True): Generates the classification report and returns it as a dictionary with metrics for each class, along with "macro avg" and "weighted avg" scores.
+python
+Copy code
+# Convert report to DataFrame
+report_df = pd.DataFrame(report).transpose()
+pd.DataFrame(report).transpose(): Converts the dictionary into a DataFrame and transposes it so that the classes ("Sensitive", "Not Sensitive") are in the index and the metrics (precision, recall, etc.) are in the columns.
+python
+Copy code
+# Create a heatmap
+plt.figure(figsize=(10, 8))
+plt.figure(figsize=(10, 8)): Creates a figure with a size of 10 inches by 8 inches.
+python
+Copy code
+sns.heatmap(report_df.iloc[:-1, :].astype(float), annot=True, cmap='viridis', fmt='.2f', linewidths=.5)
+sns.heatmap(report_df.iloc[:-1, :].astype(float), annot=True, cmap='viridis', fmt='.2f', linewidths=.5):
+report_df.iloc[:-1, :].astype(float): Selects all rows except the last one (which corresponds to "accuracy") and converts the data to floats.
+annot=True: Annotates each cell with the numeric value.
+cmap='viridis': Uses the "viridis" colormap.
+fmt='.2f': Formats the numeric values to two decimal places.
+linewidths=.5: Adds a small line width between cells to distinguish them.
+python
+Copy code
+plt.title('Classification Report Heatmap')
+plt.show()
+plt.title('Classification Report Heatmap'): Sets the title of the heatmap.
+plt.show(): Displays the heatmap.
+Result:
+The heatmap will display the precision, recall, and F1-score for each class, as well as the macro and weighted averages. The color intensity in each cell corresponds to the magnitude of the respective metric, making it easier to see which metrics are higher or lower. This visualization provides an intuitive way to assess the model's performance across different classes.
+
+# ROC Curve and AUC
+y_prob = clf.predict_proba(X_test)[:, 1]  # Probability of the positive class
+fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic')
+plt.legend(loc='lower right')
+plt.show()
+ChatGPT
+This code snippet generates a Receiver Operating Characteristic (ROC) curve for the Random Forest classifier and calculates the Area Under the Curve (AUC) score. The ROC curve is a graphical representation of the true positive rate (TPR) versus the false positive rate (FPR) at various threshold settings, while the AUC provides a single metric summarizing the overall performance of the classifier.
+
+Explanation:
+python
+Copy code
+# ROC Curve and AUC
+y_prob = clf.predict_proba(X_test)[:, 1]  # Probability of the positive class
+clf.predict_proba(X_test)[:, 1]: Predicts the probability of each sample in X_test belonging to the positive class ("Sensitive").
+[:, 1]: Selects the probabilities corresponding to the positive class (since predict_proba returns probabilities for both classes).
+python
+Copy code
+fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+roc_curve(y_test, y_prob, pos_label='Sensitive'): Computes the false positive rate (fpr), true positive rate (tpr), and thresholds for the ROC curve. The pos_label='Sensitive' argument specifies that the positive class is "Sensitive".
+python
+Copy code
+roc_auc = auc(fpr, tpr)
+auc(fpr, tpr): Calculates the Area Under the Curve (AUC) for the ROC curve, which summarizes the overall performance of the model.
+Plotting the ROC Curve:
+python
+Copy code
+plt.figure(figsize=(8, 6))
+plt.figure(figsize=(8, 6)): Initializes a new figure with a size of 8 inches by 6 inches.
+python
+Copy code
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot(fpr, tpr, color='darkorange', lw=2): Plots the ROC curve with the fpr on the x-axis and the tpr on the y-axis.
+color='darkorange': Sets the color of the ROC curve to dark orange.
+lw=2: Sets the line width to 2.
+label=f'ROC curve (AUC = {roc_auc:.2f})': Adds a label to the curve, including the AUC score formatted to two decimal places.
+python
+Copy code
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--'): Plots a diagonal line from (0, 0) to (1, 1) in navy color. This line represents a random classifier with no predictive ability (AUC = 0.5), serving as a baseline.
+python
+Copy code
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlim([0.0, 1.0]) and plt.ylim([0.0, 1.05]): Set the limits for the x and y axes to ensure the ROC curve fits well within the plot.
+python
+Copy code
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.xlabel('False Positive Rate'): Labels the x-axis as "False Positive Rate".
+plt.ylabel('True Positive Rate'): Labels the y-axis as "True Positive Rate".
+python
+Copy code
+plt.title('Receiver Operating Characteristic')
+plt.title('Receiver Operating Characteristic'): Sets the title of the plot to "Receiver Operating Characteristic".
+python
+Copy code
+plt.legend(loc='lower right')
+plt.legend(loc='lower right'): Places the legend in the lower right corner of the plot.
+python
+Copy code
+plt.show()
+plt.show(): Displays the ROC curve plot.
+Result:
+The ROC curve will visually show how well the classifier distinguishes between the positive ("Sensitive") and negative ("Not Sensitive") classes. The AUC score will appear in the legend, providing a single metric to evaluate the model's performance. A higher AUC score (closer to 1) indicates better model performance.
+
+# Precision-Recall Curve
+precision, recall, thresholds = precision_recall_curve(y_test, y_prob, pos_label='Sensitive')
+
+plt.figure(figsize=(8, 6))
+plt.plot(recall, precision, color='blue', lw=2)
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.show()
+ChatGPT
+This code snippet generates a Precision-Recall (PR) curve for the Random Forest classifier. The Precision-Recall curve is a graphical representation that shows the trade-off between precision and recall for different threshold values. It's especially useful for imbalanced datasets, where the ROC curve might be less informative.
+
+Explanation:
+python
+Copy code
+# Precision-Recall Curve
+precision, recall, thresholds = precision_recall_curve(y_test, y_prob, pos_label='Sensitive')
+precision_recall_curve(y_test, y_prob, pos_label='Sensitive'): Computes the precision and recall for different threshold values.
+y_test: The true labels of the test set.
+y_prob: The predicted probabilities for the positive class ("Sensitive").
+pos_label='Sensitive': Indicates that the positive class is "Sensitive".
+precision: Array of precision values for different thresholds.
+recall: Array of recall values for different thresholds.
+thresholds: Array of thresholds used to compute precision and recall.
+Plotting the Precision-Recall Curve:
+python
+Copy code
+plt.figure(figsize=(8, 6))
+plt.figure(figsize=(8, 6)): Initializes a new figure with a size of 8 inches by 6 inches.
+python
+Copy code
+plt.plot(recall, precision, color='blue', lw=2)
+plt.plot(recall, precision, color='blue', lw=2): Plots the Precision-Recall curve with recall on the x-axis and precision on the y-axis.
+color='blue': Sets the color of the curve to blue.
+lw=2: Sets the line width to 2.
+python
+Copy code
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.xlabel('Recall'): Labels the x-axis as "Recall".
+plt.ylabel('Precision'): Labels the y-axis as "Precision".
+python
+Copy code
+plt.title('Precision-Recall Curve')
+plt.title('Precision-Recall Curve'): Sets the title of the plot to "Precision-Recall Curve".
+python
+Copy code
+plt.show()
+plt.show(): Displays the Precision-Recall curve plot.
+Result:
+The Precision-Recall curve will show the relationship between precision and recall as the threshold for classifying a positive prediction is varied. Typically, there is a trade-off between precision and recall: as one increases, the other tends to decrease. The curve helps in identifying an optimal balance between precision and recall, especially in cases where the cost of false positives and false negatives is different.
+
+# Learning Curve
+train_sizes, train_scores, test_scores = learning_curve(clf, X, labels, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
+
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+
+plt.figure(figsize=(8, 6))
+plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Training score')
+plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Cross-validation score')
+plt.xlabel('Training Examples')
+plt.ylabel('Score')
+plt.title('Learning Curve')
+plt.legend(loc='best')
+plt.show()
+ChatGPT
+This code snippet generates a learning curve for the Random Forest classifier. A learning curve shows how the model's performance (measured by the score) changes as the size of the training dataset increases. It helps diagnose whether a model is suffering from bias (underfitting) or variance (overfitting) and provides insight into the benefits of adding more training data.
+
+Explanation:
+python
+Copy code
+# Learning Curve
+train_sizes, train_scores, test_scores = learning_curve(clf, X, labels, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10))
+learning_curve(clf, X, labels, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10)): Generates the learning curve data.
+clf: The Random Forest classifier.
+X: The feature matrix.
+labels: The true labels corresponding to X.
+cv=5: Uses 5-fold cross-validation.
+n_jobs=-1: Utilizes all available CPU cores for computation.
+train_sizes=np.linspace(0.1, 1.0, 10): Specifies the sizes of the training dataset, ranging from 10% to 100% of the data, in 10 equally spaced intervals.
+train_sizes: The number of training examples used in each iteration.
+train_scores: The training scores for each subset of the data, across all cross-validation folds.
+test_scores: The cross-validation scores for each subset of the data.
+python
+Copy code
+train_scores_mean = np.mean(train_scores, axis=1)
+test_scores_mean = np.mean(test_scores, axis=1)
+np.mean(train_scores, axis=1): Computes the mean training score across all cross-validation folds for each training size.
+np.mean(test_scores, axis=1): Computes the mean cross-validation score across all cross-validation folds for each training size.
+Plotting the Learning Curve:
+python
+Copy code
+plt.figure(figsize=(8, 6))
+plt.figure(figsize=(8, 6)): Initializes a new figure with a size of 8 inches by 6 inches.
+python
+Copy code
+plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Training score')
+plt.plot(train_sizes, train_scores_mean, 'o-', color='r', label='Training score'): Plots the mean training scores as a function of the training size.
+train_sizes: The x-axis represents the number of training examples.
+train_scores_mean: The y-axis represents the average training score.
+'o-': Plots the points with circles connected by lines.
+color='r': The line is colored red.
+label='Training score': Labels this line as "Training score" in the legend.
+python
+Copy code
+plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Cross-validation score')
+plt.plot(train_sizes, test_scores_mean, 'o-', color='g', label='Cross-validation score'): Plots the mean cross-validation scores as a function of the training size.
+test_scores_mean: The y-axis represents the average cross-validation score.
+color='g': The line is colored green.
+label='Cross-validation score': Labels this line as "Cross-validation score" in the legend.
+python
+Copy code
+plt.xlabel('Training Examples')
+plt.ylabel('Score')
+plt.xlabel('Training Examples'): Labels the x-axis as "Training Examples".
+plt.ylabel('Score'): Labels the y-axis as "Score" (accuracy or any other metric used by the classifier).
+python
+Copy code
+plt.title('Learning Curve')
+plt.title('Learning Curve'): Sets the title of the plot to "Learning Curve".
+python
+Copy code
+plt.legend(loc='best')
+plt.legend(loc='best'): Adds a legend to the plot, automatically placed at the best location to avoid overlapping with the data.
+python
+Copy code
+plt.show()
+plt.show(): Displays the learning curve plot.
+Result:
+The learning curve will show two lines:
+
+Training Score (Red): Typically starts high and may decrease as more training examples are used.
+Cross-Validation Score (Green): Typically starts low and increases as more training examples are used, stabilizing as the dataset grows.
+By analyzing the gap between these two curves:
+
+If both curves are close and the scores are high: The model is well-fitted.
+If there is a large gap: The model might be overfitting (high variance).
+If both curves are low: The model might be underfitting (high bias).
+This analysis helps determine whether adding more data or tweaking the model would improve performance.
+
+def predict_new_file(file_path, vectorizer, clf):
+    # Read the new file
+    with open('sens.txt', 'r') as file:
+        new_data = file.readlines()
+    
+    # Preprocess the text (same vectorization as used for training)
+    X_new = vectorizer.transform(new_data)
+    
+    # Predict the sensitivity
+    predictions = clf.predict(X_new)
+    
+    # Print the results
+    for line, prediction in zip(new_data, predictions):
+        print(f"Text: {line.strip()} - Prediction: {prediction}")
+
+# Example usage (replace 'new_data.txt' with your file path)
+predict_new_file('sens.txt', vectorizer, clf)
+ChatGPT
+This function predict_new_file is designed to predict whether lines of text in a new file are classified as "Sensitive" or "Not Sensitive" based on the trained Random Forest classifier. The function reads the file, processes the text data, predicts the sensitivity using the classifier, and then prints the predictions.
+
+Explanation:
+python
+Copy code
+def predict_new_file(file_path, vectorizer, clf):
+file_path: The path to the new file containing the text data.
+vectorizer: The CountVectorizer object used to transform the text data into numerical features (same as used during training).
+clf: The trained Random Forest classifier used for making predictions.
+python
+Copy code
+# Read the new file
+with open(file_path, 'r') as file:
+    new_data = file.readlines()
+with open(file_path, 'r') as file:: Opens the specified file in read mode.
+new_data = file.readlines(): Reads all the lines from the file into a list called new_data. Each element in the list represents a line of text from the file.
+python
+Copy code
+# Preprocess the text (same vectorization as used for training)
+X_new = vectorizer.transform(new_data)
+X_new = vectorizer.transform(new_data): Transforms the new text data into the same numerical format (bag-of-words) that was used for training. This ensures that the model can properly interpret the new data.
+python
+Copy code
+# Predict the sensitivity
+predictions = clf.predict(X_new)
+predictions = clf.predict(X_new): Uses the trained classifier (clf) to predict whether each line of text in X_new is "Sensitive" or "Not Sensitive". The predictions are stored in the predictions array.
+python
+Copy code
+# Print the results
+for line, prediction in zip(new_data, predictions):
+    print(f"Text: {line.strip()} - Prediction: {prediction}")
+for line, prediction in zip(new_data, predictions):: Iterates over each line of text and its corresponding prediction.
+line.strip(): Removes any leading or trailing whitespace from the line.
+print(f"Text: {line.strip()} - Prediction: {prediction}"): Prints the line of text along with its predicted classification ("Sensitive" or "Not Sensitive").
+Example Usage:
+To use this function, simply call it with the path to the file you want to analyze, along with the vectorizer and clf that were used during training. For example:
+
+python
+Copy code
+predict_new_file('sens.txt', vectorizer, clf)
+This would read the contents of sens.txt, preprocess them, predict the sensitivity of each line, and print the results.
+
+Note:
+Ensure that the file_path you provide correctly points to the file containing the new data.
+The text data in the new file should be in a format similar to the training data for accurate predictions.
+def classify_document(file_path, vectorizer, clf):
+    # Read the entire file content
+    with open('sens.txt', 'r') as file:
+        document = file.read()
+    
+    # Preprocess the text (same vectorization as used for training)
+    X_new = vectorizer.transform([document])
+    
+    # Predict the sensitivity of the entire document
+    prediction = clf.predict(X_new)[0]
+    
+    # Print the result
+    print(f"The entire document is classified as: {prediction}")
+
+# Example usage (replace 'paras.txt' with your file path)
+classify_document('sens.txt', vectorizer, clf)
+ChatGPT
+The function classify_document is designed to classify the entire content of a document as either "Sensitive" or "Not Sensitive" using a pre-trained Random Forest classifier. Unlike the previous function that processes each line individually, this function treats the entire document as a single input.
+
+Explanation:
+python
+Copy code
+def classify_document(file_path, vectorizer, clf):
+file_path: The path to the document you want to classify.
+vectorizer: The CountVectorizer object used during training to convert text data into numerical features.
+clf: The trained Random Forest classifier used for making predictions.
+python
+Copy code
+# Read the entire file content
+with open(file_path, 'r') as file:
+    document = file.read()
+with open(file_path, 'r') as file:: Opens the specified file in read mode.
+document = file.read(): Reads the entire content of the file into a string called document.
+python
+Copy code
+# Preprocess the text (same vectorization as used for training)
+X_new = vectorizer.transform([document])
+X_new = vectorizer.transform([document]): Transforms the entire document into a numerical format using the vectorizer. The document is wrapped in a list to keep the input format consistent with the vectorizer’s expectations (which usually processes lists of strings).
+python
+Copy code
+# Predict the sensitivity of the entire document
+prediction = clf.predict(X_new)[0]
+prediction = clf.predict(X_new)[0]: Uses the trained classifier (clf) to predict the sensitivity of the document. Since the output of predict is an array, [0] is used to extract the single prediction.
+python
+Copy code
+# Print the result
+print(f"The entire document is classified as: {prediction}")
+print(f"The entire document is classified as: {prediction}"): Prints the classification result, indicating whether the entire document is "Sensitive" or "Not Sensitive".
+Example Usage:
+To use this function, simply call it with the path to the file you want to classify, along with the vectorizer and clf that were used during training. For example:
+
+python
+Copy code
+classify_document('sens.txt', vectorizer, clf)
+This would read the contents of sens.txt, preprocess the entire document, predict whether the document is "Sensitive" or "Not Sensitive", and print the result.
+
+Note:
+Ensure that the file_path you provide correctly points to the file containing the document you want to classify.
+This function assumes that the document as a whole can be classified, which may be suitable for situations where the overall content is consistently "Sensitive" or "Not Sensitive". If the document contains mixed content, a line-by-line or paragraph-by-paragraph classification might be more appropriate.
+rom sklearn.metrics import roc_curve
+
+def plot_cumulative_gain(y_test, y_prob):
+    # Calculate the cumulative gain curve
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+    gains = tpr / tpr[-1]
+    
+    # Plot the cumulative gain curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(np.arange(len(gains)), gains, 'b-', label='Cumulative Gain')
+    plt.plot([0, len(gains)-1], [0, 1], 'k--', label='Random Model')
+    plt.xlabel('Percentage of Sample')
+    plt.ylabel('Cumulative Gain')
+    plt.title('Cumulative Gain Chart')
+    plt.legend(loc='lower right')
+    plt.show()
+
+def plot_lift_chart(y_test, y_prob):
+    # Calculate the lift curve
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+    gains = tpr / tpr[-1]
+    lift = gains / (np.arange(len(gains)) / len(gains))
+    
+    # Plot the lift curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(np.arange(len(lift)), lift, 'b-', label='Lift')
+    plt.xlabel('Percentage of Sample')
+    plt.ylabel('Lift')
+    plt.title('Lift Chart')
+    plt.legend(loc='lower right')
+    plt.show()
+
+# Example usage:
+y_prob = clf.predict_proba(X_test)[:, 1]  # Probability of the positive class
+plot_cumulative_gain(y_test, y_prob)
+plot_lift_chart(y_test, y_prob)
+Function: plot_cumulative_gain
+python
+Copy code
+def plot_cumulative_gain(y_test, y_prob):
+This defines a function called plot_cumulative_gain that takes two arguments:
+y_test: The true labels of the test dataset.
+y_prob: The predicted probabilities for the positive class (in this case, Sensitive).
+python
+Copy code
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+The roc_curve function computes the False Positive Rate (FPR), True Positive Rate (TPR), and thresholds to plot the ROC curve. The pos_label specifies which label is considered the positive class.
+python
+Copy code
+    gains = tpr / tpr[-1]
+The gains variable calculates the cumulative gain by normalizing the TPR values with the maximum TPR (i.e., the last value of TPR, tpr[-1]). This scales the TPR to represent the cumulative gain as a percentage.
+python
+Copy code
+    plt.figure(figsize=(8, 6))
+This line initializes a new figure for the plot with a specified size of 8 by 6 inches.
+python
+Copy code
+    plt.plot(np.arange(len(gains)), gains, 'b-', label='Cumulative Gain')
+This line plots the cumulative gain curve:
+np.arange(len(gains)) generates a range of numbers corresponding to the length of the gains array.
+gains is the y-axis data.
+'b-' specifies the line color (b for blue) and line style (- for solid line).
+label='Cumulative Gain' adds a label to the plot for the legend.
+python
+Copy code
+    plt.plot([0, len(gains)-1], [0, 1], 'k--', label='Random Model')
+This line plots a baseline for a random model, which is a straight line from (0, 0) to (len(gains)-1, 1). It serves as a comparison:
+[0, len(gains)-1] are the x-axis values.
+[0, 1] are the y-axis values.
+'k--' specifies the line color (k for black) and line style (-- for dashed line).
+label='Random Model' adds a label for the baseline in the legend.
+python
+Copy code
+    plt.xlabel('Percentage of Sample')
+    plt.ylabel('Cumulative Gain')
+    plt.title('Cumulative Gain Chart')
+    plt.legend(loc='lower right')
+    plt.show()
+These lines configure the plot:
+plt.xlabel('Percentage of Sample') sets the x-axis label.
+plt.ylabel('Cumulative Gain') sets the y-axis label.
+plt.title('Cumulative Gain Chart') sets the title of the plot.
+plt.legend(loc='lower right') adds a legend to the plot, positioning it at the lower right corner.
+plt.show() displays the plot.
+Function: plot_lift_chart
+python
+Copy code
+def plot_lift_chart(y_test, y_prob):
+This defines a function called plot_lift_chart that takes two arguments:
+y_test: The true labels of the test dataset.
+y_prob: The predicted probabilities for the positive class (Sensitive).
+python
+Copy code
+    fpr, tpr, thresholds = roc_curve(y_test, y_prob, pos_label='Sensitive')
+The roc_curve function is used again to compute the FPR, TPR, and thresholds for plotting the ROC curve.
+python
+Copy code
+    gains = tpr / tpr[-1]
+gains is calculated in the same way as in plot_cumulative_gain, representing the normalized TPR.
+python
+Copy code
+    lift = gains / (np.arange(len(gains)) / len(gains))
+lift is calculated by dividing the cumulative gain by the percentage of the sample size:
+np.arange(len(gains)) generates a range of indices.
+Dividing by len(gains) converts these indices into a percentage.
+The result is an array representing the lift at each point in the dataset.
+python
+Copy code
+    plt.figure(figsize=(8, 6))
+This line initializes a new figure for the lift plot with a specified size of 8 by 6 inches.
+python
+Copy code
+    plt.plot(np.arange(len(lift)), lift, 'b-', label='Lift')
+``]
+- This line plots the lift curve:
+  - `np.arange(len(lift))` generates a range of numbers corresponding to the length of the `lift` array.
+  - `lift` is the y-axis data.
+  - `'b-'` specifies the line color (`b` for blue) and line style (`-` for solid line).
+  - `label='Lift'` adds a label to the plot for the legend.
+
+```python
+    plt.xlabel('Percentage of Sample')
+    plt.ylabel('Lift')
+    plt.title('Lift Chart')
+    plt.legend(loc='lower right')
+    plt.show()
+These lines configure the plot:
+plt.xlabel('Percentage of Sample') sets the x-axis label.
+plt.ylabel('Lift') sets the y-axis label.
+plt.title('Lift Chart') sets the title of the plot.
+plt.legend(loc='lower right') adds a legend to the plot, positioning it at the lower right corner.
+plt.show() displays the plot.
+Example Usage
+python
+Copy code
+y_prob = clf.predict_proba(X_test)[:, 1]  # Probability of the positive class
+plot_cumulative_gain(y_test, y_prob)
+plot_lift_chart(y_test, y_prob)
+This part is an example usage of the functions:
+clf.predict_proba(X_test)[:, 1] generates the predicted probabilities for the positive class (class 1), using a classifier (clf).
+These probabilities are passed to plot_cumulative_gain and plot_lift_chart functions to generate the respective plots.
+
+def plot_class_distribution(y):
+    plt.figure(figsize=(6, 4))
+    sns.countplot(y)
+    plt.xlabel('Class Label')
+    plt.ylabel('Count')
+    plt.title('Class Distribution')
+    plt.show()
+
+# Example usage:
+plot_class_distribution(labels)
+explain
+ChatGPT
+Let's break down the plot_class_distribution function line by line.
+
+Function: plot_class_distribution
+python
+Copy code
+def plot_class_distribution(y):
+This defines a function called plot_class_distribution that takes one argument:
+y: An array-like object containing the class labels for a dataset. This could be a list, NumPy array, or Pandas Series.
+python
+Copy code
+    plt.figure(figsize=(6, 4))
+This line initializes a new figure for the plot with a specified size of 6 by 4 inches.
+figsize=(6, 4) determines the width (6 inches) and height (4 inches) of the figure.
+python
+Copy code
+    sns.countplot(y)
+This line uses seaborn's countplot function to create a bar plot showing the count of each unique class label in y.
+sns.countplot(y) automatically counts the occurrences of each unique value in y and creates a bar for each one.
+python
+Copy code
+    plt.xlabel('Class Label')
+This sets the label for the x-axis as 'Class Label'.
+The x-axis will show the unique class labels from y.
+python
+Copy code
+    plt.ylabel('Count')
+This sets the label for the y-axis as 'Count'.
+The y-axis will represent the number of occurrences of each class label in y.
+python
+Copy code
+    plt.title('Class Distribution')
+This sets the title of the plot as 'Class Distribution'.
+python
+Copy code
+    plt.show()
+This line displays the plot on the screen.
+Example Usage
+python
+Copy code
+plot_class_distribution(labels)
+This is an example of how to use the plot_class_distribution function:
+labels is a variable that contains the class labels of a dataset.
+The function will create and display a bar plot showing the distribution of these labels (i.e., how many times each label appears in the dataset).
+Summary:
+The plot_class_distribution function visualizes the distribution of class labels in a dataset.
+It uses seaborn's countplot function to create a bar plot, which helps you quickly assess if your dataset is balanced or imbalanced in terms of class labels.
+This is important in machine learning as an imbalanced dataset might affect the performance of some models.
+from sklearn.model_selection import validation_curve
+
+def plot_validation_curve(X, y):
+    param_range = np.arange(10, 200, 10)
+    train_scores, test_scores = validation_curve(
+        RandomForestClassifier(random_state=42), X, y, param_name="n_estimators", param_range=param_range,
+        cv=5, scoring="accuracy", n_jobs=-1)
+    
+    train_scores_mean = np.mean(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(param_range, train_scores_mean, label="Training score", color="r")
+    plt.plot(param_range, test_scores_mean, label="Cross-validation score", color="g")
+    plt.xlabel('Number of Estimators')
+    plt.ylabel('Accuracy')
+    plt.title('Validation Curve with Random Forest')
+    plt.legend(loc='best')
+    plt.show()
+
+# Example usage:
+plot_validation_curve(X, labels)
+explain
+ChatGPT
+Let's break down the plot_validation_curve function line by line.
+
+Function: plot_validation_curve
+python
+Copy code
+from sklearn.model_selection import validation_curve
+This imports the validation_curve function from sklearn.model_selection. The validation_curve function is used to evaluate the performance of a model on different values of a specified hyperparameter. It returns the training and cross-validation scores for each value of the hyperparameter.
+python
+Copy code
+def plot_validation_curve(X, y):
+This defines a function called plot_validation_curve that takes two arguments:
+X: The feature matrix (input data).
+y: The target variable (labels).
+python
+Copy code
+    param_range = np.arange(10, 200, 10)
+This creates a range of values for the hyperparameter n_estimators of the RandomForestClassifier.
+np.arange(10, 200, 10) generates an array of values starting from 10 up to (but not including) 200, with a step size of 10.
+These values represent the number of trees in the random forest that the validation curve will evaluate.
+python
+Copy code
+    train_scores, test_scores = validation_curve(
+        RandomForestClassifier(random_state=42), X, y, param_name="n_estimators", param_range=param_range,
+        cv=5, scoring="accuracy", n_jobs=-1)
+This line computes the validation curve:
+RandomForestClassifier(random_state=42) creates an instance of the RandomForestClassifier with a fixed random state for reproducibility.
+X, y are the input features and labels, respectively.
+param_name="n_estimators" specifies that the n_estimators hyperparameter will be varied.
+param_range=param_range provides the range of values to be tested for n_estimators.
+cv=5 sets the number of folds for cross-validation to 5.
+scoring="accuracy" specifies that accuracy will be used to evaluate the model.
+n_jobs=-1 uses all available processors to speed up computation.
+The function returns train_scores and test_scores, which are arrays containing the scores for each value in param_range during training and cross-validation, respectively.
+python
+Copy code
+    train_scores_mean = np.mean(train_scores, axis=1)
+    test_scores_mean = np.mean(test_scores, axis=1)
+These lines calculate the mean scores across the cross-validation folds for both training and test data:
+train_scores_mean is the mean training accuracy for each value of n_estimators.
+test_scores_mean is the mean cross-validation accuracy for each value of n_estimators.
+python
+Copy code
+    plt.figure(figsize=(8, 6))
+This initializes a new figure for the plot with a specified size of 8 by 6 inches.
+python
+Copy code
+    plt.plot(param_range, train_scores_mean, label="Training score", color="r")
+This plots the mean training accuracy against the number of estimators:
+param_range is the x-axis data (number of estimators).
+train_scores_mean is the y-axis data (mean training accuracy).
+label="Training score" adds a label for this line in the legend.
+color="r" sets the line color to red.
+python
+Copy code
+    plt.plot(param_range, test_scores_mean, label="Cross-validation score", color="g")
+This plots the mean cross-validation accuracy against the number of estimators:
+param_range is the x-axis data (number of estimators).
+test_scores_mean is the y-axis data (mean cross-validation accuracy).
+label="Cross-validation score" adds a label for this line in the legend.
+color="g" sets the line color to green.
+python
+Copy code
+    plt.xlabel('Number of Estimators')
+    plt.ylabel('Accuracy')
+    plt.title('Validation Curve with Random Forest')
+    plt.legend(loc='best')
+    plt.show()
+These lines configure and display the plot:
+plt.xlabel('Number of Estimators') sets the x-axis label to 'Number of Estimators'.
+plt.ylabel('Accuracy') sets the y-axis label to 'Accuracy'.
+plt.title('Validation Curve with Random Forest') sets the title of the plot.
+plt.legend(loc='best') places the legend in the best location according to the plot layout.
+plt.show() displays the plot.
+Example Usage
+python
+Copy code
+plot_validation_curve(X, labels)
+This is an example of how to use the plot_validation_curve function:
+X is the feature matrix, and labels is the target variable (class labels).
+The function will generate a plot showing how the accuracy on both the training and cross-validation sets changes as the number of estimators in the RandomForestClassifier is varied.
+Summary:
+The plot_validation_curve function helps visualize the effect of the n_estimators hyperparameter on the accuracy of a RandomForestClassifier.
+By comparing the training and cross-validation accuracy, you can identify whether the model is underfitting, overfitting, or just right for the given range of hyperparameter values.
+
+
+
+
+
+
+
+
+
+
+
